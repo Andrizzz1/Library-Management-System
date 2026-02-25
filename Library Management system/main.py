@@ -1,8 +1,24 @@
 from tkinter import Frame, Label
-
+import psycopg2
 import customtkinter as tk
 from PIL import Image
 import os
+
+
+conn = psycopg2.connect(host="localhost", dbname="postgres", user="postgres", password="123", port=5432)
+
+cur = conn.cursor()
+#database
+cur.execute('''
+        CREATE TABLE IF NOT EXISTS person (
+            id SERIAL PRIMARY KEY,
+            Username VARCHAR(255),
+            password VARCHAR(255)
+        );
+''')
+
+conn.commit()
+
 
 LibraryIMG = os.path.join("images","LibraryIMG.jpg")
 class LibraryManagement():
@@ -81,6 +97,11 @@ class LibraryManagement():
         self.Loginbutton = tk.CTkButton(self.lgn_frame, text='LOGIN', font=("", 20,), height=40, width=300)
         self.Loginbutton.place(x=140, y=420)
 
+        self.Loginbutton.bind(
+            "<Button-1>",
+            lambda e: self.studentDashboard()
+        )
+
         self.CreateACClabel = tk.CTkLabel(self.lgn_frame, text="Don't have an account?", font=('yu gothic ui', 16,))
         self.CreateACClabel.place(x=213, y=480)
 
@@ -99,10 +120,111 @@ class LibraryManagement():
             lambda e: self.open_register()
         )
 
+
+
     def open_register(self):
-        print("CREATE ACC")
+        self.lgn_frame.place_forget()
+        self.show_register_frame()
+
+    def show_register_frame(self):
+        self.Rgs_frame = Frame(self.root, width=800, height=980)
+        self.Rgs_frame.place(x=730, y=0)
+
+        self.txt = 'Register An Account'
+        self.heading = tk.CTkLabel(self.Rgs_frame, text=self.txt, font=('yu gothic ui', 55, 'bold'))
+        self.heading.place(x=45, y=30)
+
+        self.UserName = tk.CTkLabel(self.Rgs_frame, text='Username', font=('yu gothic ui', 20,))
+        self.UserName.place(x=140, y=200)
+
+        self.UserRegister = tk.CTkEntry(
+            master=self.Rgs_frame,
+            width=300,
+            height=35,
+            border_width=0,
+            fg_color="transparent",  # removes box background
+            text_color="black"
+        )
+        self.UserRegister.place(x=140, y=230)
+
+        # bottom line
+        self.bottom_line = tk.CTkFrame(
+            master=self.Rgs_frame,
+            width=300,
+            height=2,
+            fg_color="black"
+        )
+        self.bottom_line.place(x=140, y=265)
+
+        # Password
+        self.PasswordLabel = tk.CTkLabel(self.Rgs_frame, text='Password', font=('yu gothic ui', 20,))
+        self.PasswordLabel.place(x=140, y=300)
+
+        self.RegisterPassword = tk.CTkEntry(
+            master=self.Rgs_frame,
+            width=300,
+            height=35,
+            show="•",
+            border_width=0,
+            fg_color="transparent",  # removes box background
+
+        )
+        self.RegisterPassword.place(x=140, y=330)
+
+        # bottom line
+        self.bottom_line = tk.CTkFrame(
+            master=self.Rgs_frame,
+            width=300,
+            height=2,
+            fg_color="black"
+        )
+        self.bottom_line.place(x=140, y=365)
+
+        self.Registerbutton = tk.CTkButton(self.Rgs_frame, text='Register Account', font=("", 20,), height=40, width=300)
+        self.Registerbutton.place(x=140, y=420)
+
+        self.Registerbutton.bind(
+            "<Button-1>",
+            lambda e: self.register_user()
+        )
+
+        self.backToLogin = tk.CTkLabel(
+            self.Rgs_frame,
+            text="back to Login",
+            font=("yu gothic ui", 15, "bold"),
+            text_color="#3A7FF6",
+            cursor="hand2"
+        )
+        self.backToLogin.place(x=235, y=500)
+
+        # click event
+        self.backToLogin.bind(
+            "<Button-1>",
+            lambda e: self.BackToLogin()
+        )
+
+    def register_user(self):
+        username = self.UserRegister.get()
+        password = self.RegisterPassword.get()
+
+        cur.execute("INSERT INTO person (Username, password) VALUES (%s, %s)", (username, password))
+        conn.commit()
+
+    def BackToLogin(self):
+        self.Rgs_frame.place_forget()
+        self.lgn_frame.place(x=730, y=0)
+    def studentDashboard(self):
+        self.lgn_frame.place_forget()
+        self.label.place_forget()
+
 root = tk.CTk()
 obj = LibraryManagement(root)
 
 
+
 root.mainloop()
+
+cur.close()
+conn.close()
+
+
