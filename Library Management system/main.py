@@ -3,9 +3,17 @@ import psycopg2
 import customtkinter as tk
 from PIL import Image
 import os
-
-
-conn = psycopg2.connect(host="localhost", dbname="postgres", user="postgres", password="123", port=5432)
+from tkinter import messagebox
+from studentDashboard import StudentDashboard
+from dotenv import load_dotenv
+load_dotenv()
+conn = psycopg2.connect(
+    host=os.getenv("DB_HOST"),
+    dbname=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    port=os.getenv("DB_PORT")
+)
 
 cur = conn.cursor()
 #database
@@ -207,15 +215,40 @@ class LibraryManagement():
         username = self.UserRegister.get()
         password = self.RegisterPassword.get()
 
-        cur.execute("INSERT INTO person (Username, password) VALUES (%s, %s)", (username, password))
-        conn.commit()
+        cur.execute("SELECT * FROM person WHERE Username = %s", (username,))
+        existing_user = cur.fetchone()
+
+        if username == "" or password == "":
+            messagebox.showinfo(title="Warning", message="Please don't Leave any fields empty")
+
+        elif existing_user:
+            messagebox.showinfo(title="Warning", message="Username already exist")
+
+        else:
+            cur.execute("INSERT INTO person (Username, password) VALUES (%s, %s)", (username, password))
+            conn.commit()
+
+            self.UserRegister.delete(0,'end')
+            self.RegisterPassword.delete(0,'end')
+
+            messagebox.showinfo(title="confirmation", message="information registered, Go back to Login Page")
 
     def BackToLogin(self):
         self.Rgs_frame.place_forget()
         self.lgn_frame.place(x=730, y=0)
     def studentDashboard(self):
-        self.lgn_frame.place_forget()
-        self.label.place_forget()
+        username = self.UserEntry.get()
+        password = self.PasswordEntry.get()
+
+        cur.execute("SELECT * FROM person WHERE Username = %s AND password = %s", (username, password))
+        user = cur.fetchone()
+
+        if user:
+            self.lgn_frame.place_forget()
+            self.label.place_forget()
+            StudentDashboard(self.root)
+        else:
+            messagebox.showinfo(title="Warning", message="Invalid username or password!")
 
 root = tk.CTk()
 obj = LibraryManagement(root)
