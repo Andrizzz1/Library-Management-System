@@ -201,7 +201,8 @@ class LibraryManagement():
             text="back to Login",
             font=("yu gothic ui", 15, "bold"),
             text_color="#3A7FF6",
-            cursor="hand2"
+            cursor="hand2",
+
         )
         self.backToLogin.place(x=235, y=500)
 
@@ -246,10 +247,13 @@ class LibraryManagement():
         if user:
             self.lgn_frame.place_forget()
             self.label.place_forget()
-            StudentDashboard(self.root)
+            StudentDashboard(self.root, username, self.BackToLoginFromDashboard)
         else:
-            messagebox.showinfo(title="Warning", message="Invalid username or password!")
+            messagebox.showinfo(title="Warning", message="Invalid username or password!" )
 
+    def BackToLoginFromDashboard(self):
+        self.lgn_frame.place(x=730, y=0)
+        self.label.place(x=0, y=0)  # bring back the left side image
 root = tk.CTk()
 obj = LibraryManagement(root)
 
